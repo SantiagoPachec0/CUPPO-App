@@ -18,6 +18,13 @@ CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Carga explícita de User Secrets en desarrollo. CreateBuilder ya lo intenta, pero depende
+// del nombre de la aplicación que reporta el host y en Visual Studio no siempre los encontraba.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>(optional: true, reloadOnChange: true);
+}
+
 // ======================================================
 // 1. Inyección de Dependencias
 // ======================================================
@@ -58,10 +65,19 @@ builder.Services.AddCors(options =>
 // En desarrollo viene de User Secrets; en el servidor, de la variable de entorno JwtOptions__SecretKey.
 var jwtSecretKey = builder.Configuration["JwtOptions:SecretKey"];
 if (string.IsNullOrWhiteSpace(jwtSecretKey))
+{
+    var secretsId = typeof(Program).Assembly
+        .GetCustomAttributes(typeof(Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute), false)
+        .Cast<Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute>()
+        .FirstOrDefault()?.UserSecretsId;
+    var secretsPath = secretsId is null ? "(sin UserSecretsId)" : Microsoft.Extensions.Configuration.UserSecrets.PathHelper.GetSecretsPathFromSecretsId(secretsId);
+    var providers = string.Join(", ", ((IConfigurationRoot)builder.Configuration).Providers.Select(p => p.ToString()));
+
     throw new InvalidOperationException(
         $"La clave secreta JWT 'JwtOptions:SecretKey' no está configurada (entorno: {builder.Environment.EnvironmentName}). " +
-        "En desarrollo use el perfil 'https' o 'http' (ASPNETCORE_ENVIRONMENT=Development) y configure los User Secrets; " +
-        "en el servidor, la variable de entorno JwtOptions__SecretKey.");
+        "En desarrollo use el perfil 'https' o 'http' y configure los User Secrets; en el servidor, la variable de entorno JwtOptions__SecretKey. " +
+        $"Archivo de secretos esperado: {secretsPath} (existe: {File.Exists(secretsPath)}). Fuentes cargadas: {providers}");
+}
 
 builder.Services.AddAuthentication(options =>
 {
