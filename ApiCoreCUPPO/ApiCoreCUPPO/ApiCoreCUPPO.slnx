@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="ApiCoreCUPPO.Application/ApiCoreCUPPO.Application.csproj" />
+  <Project Path="ApiCoreCUPPO.Domain/ApiCoreCUPPO.Domain.csproj" />
+  <Project Path="ApiCoreCUPPO.Infrastructure/ApiCoreCUPPO.Infrastructure.csproj" />
+  <Project Path="ApiCoreCUPPO.Shared/ApiCoreCUPPO.Shared.csproj" />
+  <Project Path="ApiCoreCUPPO/ApiCoreCUPPO.API.csproj" />
+</Solution>

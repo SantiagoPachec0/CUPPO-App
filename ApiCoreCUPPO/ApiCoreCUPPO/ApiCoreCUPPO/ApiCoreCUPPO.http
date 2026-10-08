@@ -1,0 +1,20 @@
+@ApiCoreCUPPO_HostAddress = http://localhost:5154
+
+# 1. Login: copia el "token" de la respuesta en @token
+POST {{ApiCoreCUPPO_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "usuario_o_correo",
+  "password": "tu_contraseña"
+}
+
+###
+
+@token = pega_aqui_el_token
+
+# 2. Permisos del usuario autenticado
+GET {{ApiCoreCUPPO_HostAddress}}/api/users/me/permissions
+Authorization: Bearer {{token}}
+
+###
