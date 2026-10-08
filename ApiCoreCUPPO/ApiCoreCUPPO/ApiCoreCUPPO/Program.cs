@@ -18,13 +18,6 @@ CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Carga explícita de User Secrets en desarrollo. CreateBuilder ya lo intenta, pero depende
-// del nombre de la aplicación que reporta el host y en Visual Studio no siempre los encontraba.
-if (builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddUserSecrets<Program>(optional: true, reloadOnChange: true);
-}
-
 // ======================================================
 // 1. Inyección de Dependencias
 // ======================================================
@@ -71,7 +64,12 @@ if (string.IsNullOrWhiteSpace(jwtSecretKey))
         .Cast<Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute>()
         .FirstOrDefault()?.UserSecretsId;
     var secretsPath = secretsId is null ? "(sin UserSecretsId)" : Microsoft.Extensions.Configuration.UserSecrets.PathHelper.GetSecretsPathFromSecretsId(secretsId);
-    var providers = string.Join(", ", ((IConfigurationRoot)builder.Configuration).Providers.Select(p => p.ToString()));
+    // Por cada fuente: si trae la clave y su longitud (nunca el valor)
+    var providers = string.Join(" | ", ((IConfigurationRoot)builder.Configuration).Providers.Select(p =>
+        p.TryGet("JwtOptions:SecretKey", out var v) ? $"{p} [clave: {v?.Length ?? 0} car.]" : $"{p} [sin clave]"));
+    long secretsBytes = -1;
+    try { if (File.Exists(secretsPath)) secretsBytes = File.ReadAllBytes(secretsPath).Length; } catch { secretsBytes = -2; }
+    providers += $" | Bytes leídos de secrets.json: {secretsBytes}";
 
     throw new InvalidOperationException(
         $"La clave secreta JWT 'JwtOptions:SecretKey' no está configurada (entorno: {builder.Environment.EnvironmentName}). " +
