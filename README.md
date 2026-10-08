@@ -31,7 +31,8 @@ Requisitos: .NET SDK 10, SQL Server (Express o Developer), Visual Studio 2022 17
    ```
 
    En Visual Studio: clic derecho en el proyecto API → *Manage User Secrets*.
-3. **Ejecutar** el perfil `http` y abrir `http://localhost:5154/scalar/v1`.
+3. **Ejecutar** con el perfil `https` (el predeterminado en Visual Studio): abre Scalar en `https://localhost:7130/scalar/v1`.
+   No hay perfil de IIS Express: con él la API no arrancaba en entorno Development y no leía los User Secrets.
 
 En producción los mismos valores se pasan como variables de entorno:
 `ConnectionStrings__DefaultConnection`, `JwtOptions__SecretKey` y `Cors__AllowedOrigins__0`.

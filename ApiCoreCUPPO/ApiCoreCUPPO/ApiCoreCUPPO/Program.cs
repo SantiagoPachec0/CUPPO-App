@@ -58,7 +58,10 @@ builder.Services.AddCors(options =>
 // En desarrollo viene de User Secrets; en el servidor, de la variable de entorno JwtOptions__SecretKey.
 var jwtSecretKey = builder.Configuration["JwtOptions:SecretKey"];
 if (string.IsNullOrWhiteSpace(jwtSecretKey))
-    throw new InvalidOperationException("La clave secreta JWT 'JwtOptions:SecretKey' no está configurada.");
+    throw new InvalidOperationException(
+        $"La clave secreta JWT 'JwtOptions:SecretKey' no está configurada (entorno: {builder.Environment.EnvironmentName}). " +
+        "En desarrollo use el perfil 'https' o 'http' (ASPNETCORE_ENVIRONMENT=Development) y configure los User Secrets; " +
+        "en el servidor, la variable de entorno JwtOptions__SecretKey.");
 
 builder.Services.AddAuthentication(options =>
 {
