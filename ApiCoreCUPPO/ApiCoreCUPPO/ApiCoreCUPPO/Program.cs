@@ -1,14 +1,21 @@
+using ApiCoreCUPPO.API.Authorization;
 using ApiCoreCUPPO.Application.Interfaces.IRepository.Security;
+using ApiCoreCUPPO.Application.Interfaces.IServices.Common;
 using ApiCoreCUPPO.Application.Interfaces.IServices.Security;
 using ApiCoreCUPPO.Application.Services.Security;
+using ApiCoreCUPPO.Infrastructure.Data;
 using ApiCoreCUPPO.Infrastructure.Repositories.Security;
 using ApiCoreCUPPO.Infrastructure.Utilities.Authentication;
+using ApiCoreCUPPO.Infrastructure.Utilities.Email;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using System.Globalization;
 using System.Text;
+using System.Threading.RateLimiting;
 
 // ======================================================
 // 0. Configuración Global de Cultura
@@ -22,10 +29,21 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Inyección de Dependencias
 // ======================================================
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
+
+builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
+builder.Services.AddSingleton<IJwtProvider, JwtProvider>();
+builder.Services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
+
+// Correo: SMTP si está configurado; si no, se escribe en el log (en desarrollo, con el contenido)
+if (builder.Configuration.GetSection("Smtp").Get<SmtpOptions>()?.IsConfigured == true)
+    builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
+else
+    builder.Services.AddSingleton<IEmailSender, LoggingEmailSender>();
 
 builder.Services.AddScoped<ISecurityRepository, SecurityRepository>();
 builder.Services.AddScoped<ISecurityService, SecurityService>();
-builder.Services.AddSingleton<IJwtProvider, JwtProvider>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient();
@@ -97,11 +115,31 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidAudience = builder.Configuration["JwtOptions:Audience"],
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+        NameClaimType = "sub",
+        RoleClaimType = JwtProvider.RoleClaim
     };
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(Policies.SuperAdmin, policy => policy.RequireRole(Roles.SuperAdmin));
+    options.AddPolicy(Policies.VerifiedOwner, policy => policy.RequireRole(Roles.ComplexAdmin));
+});
+
+// Límite por IP en login, registro y recuperación de contraseña. Es amplio porque muchos usuarios
+// móviles comparten IP (CGNAT); el bloqueo tras 5 intentos fallidos protege cada cuenta.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(RateLimitPolicies.Auth, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(1) }));
+    options.OnRejected = async (context, cancellationToken) =>
+        await context.HttpContext.Response.WriteAsJsonAsync(
+            new { code = -429, message = "Demasiados intentos. Espera un minuto e inténtalo de nuevo." }, cancellationToken);
+});
 
 // ======================================================
 // 4. Controladores y OpenAPI / Scalar con JWT
@@ -146,6 +184,15 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
+    // Errores no controlados: se registran en el log y el cliente recibe un mensaje genérico
+    app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
+    {
+        var error = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+        app.Logger.LogError(error, "Error no controlado en {Path}", context.Request.Path);
+
+        context.Response.StatusCode = error is UnauthorizedAccessException ? StatusCodes.Status401Unauthorized : StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsJsonAsync(new { code = -1, message = "Ocurrió un error inesperado. Intenta de nuevo." });
+    }));
     app.UseHsts();
 }
 
@@ -166,6 +213,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapControllers();
 app.MapGet("/", () => Results.Redirect("/scalar/v1"));

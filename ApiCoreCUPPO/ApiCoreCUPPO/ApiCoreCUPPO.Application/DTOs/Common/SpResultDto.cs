@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ApiCoreCUPPO.Application.DTOs.Security
+namespace ApiCoreCUPPO.Application.DTOs.Common
 {
     public class SpResultDto
     {

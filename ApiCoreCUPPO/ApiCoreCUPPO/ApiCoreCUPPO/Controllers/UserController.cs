@@ -12,10 +12,27 @@ namespace ApiCoreCUPPO.API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ISecurityService _securityService;
+        private readonly IAuthService _authService;
 
-        public UsersController(ISecurityService securityService)
+        public UsersController(ISecurityService securityService, IAuthService authService)
         {
             _securityService = securityService;
+            _authService = authService;
+        }
+
+        /// <summary>
+        /// Cambia la contraseña del usuario autenticado. Cierra la sesión en los demás
+        /// dispositivos y devuelve una sesión nueva para este.
+        /// </summary>
+        [HttpPost("me/change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto request)
+        {
+            var (isSuccess, data, message) = await _authService.ChangePasswordAsync(User.GetUserId(), request, HttpContext.GetDeviceInfo());
+
+            if (!isSuccess)
+                return BadRequest(new { code = -1, message });
+
+            return Ok(data);
         }
 
         /// <summary>

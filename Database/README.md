@@ -16,6 +16,7 @@ Scripts para crear la base desde cero. Ejecutar **en orden**:
 | `09_SeedData_Catalogs.sql` | Datos de catálogos, menú de módulos y permisos por rol |
 | `10_SP_Security_Owners.sql` | Registro con rol CLIENT, permisos y verificación de dueños |
 | `11_SP_Booking_Payment.sql` | Disponibilidad, reservas, cancelación, jobs, pagos |
+| `12_Auth.sql` | Contraseñas BCrypt (migración automática), refresh tokens, códigos de recuperación |
 
 Los scripts de datos (`04`, `09`) se pueden ejecutar varias veces sin duplicar nada.
 

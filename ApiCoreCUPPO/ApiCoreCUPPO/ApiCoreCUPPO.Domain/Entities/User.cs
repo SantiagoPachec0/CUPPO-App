@@ -10,8 +10,10 @@ namespace ApiCoreCUPPO.Domain.Entities
         public string UserLogin { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Mail { get; set; } = string.Empty;
-        public byte[] PasswordHash { get; set; } = Array.Empty<byte>();
-        public byte[] PasswordSalt { get; set; } = Array.Empty<byte>();
+        /// <summary>Hash anterior (SHA-512 en SQL). NULL cuando el usuario ya migró a BCrypt.</summary>
+        public byte[]? PasswordHash { get; set; }
+        public byte[]? PasswordSalt { get; set; }
+        public string? PasswordBcrypt { get; set; }
         public bool Blocked { get; set; }
         public int FailedLoginAttempts { get; set; }
         public int StatusID { get; set; }

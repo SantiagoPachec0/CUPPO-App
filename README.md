@@ -34,6 +34,28 @@ Requisitos: .NET SDK 10, SQL Server (Express o Developer), Visual Studio 2022 17
 3. **Ejecutar** con el perfil `https` (el predeterminado en Visual Studio): abre Scalar en `https://localhost:7130/scalar/v1`.
    No hay perfil de IIS Express: con él la API no arrancaba en entorno Development y no leía los User Secrets.
 
+**Correo** (recuperación de contraseña): sin la sección `Smtp` configurada, en desarrollo el correo
+se escribe en la consola de la API (ahí aparece el código de 6 dígitos). Para enviar correos reales:
+`dotnet user-secrets set "Smtp:Host" "smtp.gmail.com"` y lo mismo con `Smtp:User`, `Smtp:Password` y `Smtp:FromAddress`.
+
+> Ejecuta los `dotnet user-secrets` desde la terminal de Visual Studio o una terminal normal de Windows.
+
+## Autenticación
+
+| Endpoint | Uso |
+|---|---|
+| `POST api/auth/register`, `POST api/auth/login` | Devuelven `token` (JWT, 60 min), `refreshToken` (30 días), `roles` y `permissions` |
+| `POST api/auth/refresh` | Cambia el `refreshToken` por una sesión nueva (el anterior deja de servir) |
+| `POST api/auth/logout` | Cierra la sesión del dispositivo |
+| `POST api/auth/forgot-password`, `POST api/auth/reset-password` | Código de 6 dígitos por correo, vence en 15 min |
+| `POST api/users/me/change-password` | Cierra las demás sesiones y devuelve una nueva |
+
+- La app debe guardar el `refreshToken` en almacenamiento seguro (`SecureStorage` en MAUI) y llamar a
+  `refresh` cuando reciba un 401.
+- Si se reusa un `refreshToken` ya usado (posible robo), se cierran todas las sesiones del usuario.
+- Login, registro y recuperación tienen un límite de 20 peticiones por minuto por IP (responde 429).
+- Políticas en controladores: `[Authorize(Policy = Policies.VerifiedOwner)]` y `[Authorize(Policy = Policies.SuperAdmin)]`.
+
 En producción los mismos valores se pasan como variables de entorno:
 `ConnectionStrings__DefaultConnection`, `JwtOptions__SecretKey` y `Cors__AllowedOrigins__0`.
 
