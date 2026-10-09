@@ -56,6 +56,8 @@ se escribe en la consola de la API (ahí aparece el código de 6 dígitos). Para
 |---|---|---|
 | `GET api/catalog` | Público | Deportes, superficies, comodidades, métodos de pago, estados, ciudades y zonas |
 | `GET api/catalog/exchange-rate` | Público | Tasa BCV vigente |
+| `GET api/venues?sportId&cityId&zoneId&search&latitude&longitude&page&pageSize` | Público | Buscar complejos (con ubicación ordena por distancia) |
+| `GET api/venues/{id}` | Público | Ficha: fotos, comodidades, canchas con precios, métodos de pago aceptados |
 | `GET api/users/me` | Sesión | Perfil, roles y estado de la solicitud de dueño |
 | `POST api/owners/me/verification` | Sesión | Solicitar ser dueño (queda pendiente) |
 | `GET api/owners/me` | Sesión | Estado de mi solicitud de dueño |

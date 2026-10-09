@@ -66,6 +66,8 @@ builder.Services.AddScoped<IVenueRepository, VenueRepository>();
 builder.Services.AddScoped<IVenueManagementService, VenueManagementService>();
 builder.Services.AddScoped<ICourtRepository, CourtRepository>();
 builder.Services.AddScoped<ICourtManagementService, CourtManagementService>();
+builder.Services.AddScoped<IPublicVenueRepository, PublicVenueRepository>();
+builder.Services.AddScoped<IPublicVenueService, PublicVenueService>();
 
 // Archivos: fotos públicas en /uploads y documentos privados (ver Storage:RootPath)
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
