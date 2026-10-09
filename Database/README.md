@@ -19,6 +19,7 @@ Scripts para crear la base desde cero. Ejecutar **en orden**:
 | `12_Auth.sql` | Contraseñas BCrypt (migración automática), refresh tokens, códigos de recuperación |
 | `13_SP_Catalog_Owners.sql` | Catálogos en una llamada, tasa BCV, consulta de solicitudes de dueño |
 | `14_SP_Venue_Management.sql` | Panel de dueño: complejos, canchas, horarios, precios, bloqueos, cuentas de cobro, fotos; revisión de complejos |
+| `15_SP_Public_Venues.sql` | Búsqueda pública de complejos (filtros y distancia) y ficha pública |
 
 Los scripts de datos (`04`, `09`) se pueden ejecutar varias veces sin duplicar nada.
 
