@@ -1,4 +1,4 @@
-using ApiCoreCUPPO.Application.DTOs.Common;
+﻿using ApiCoreCUPPO.Application.DTOs.Common;
 using ApiCoreCUPPO.Application.DTOs.Venue;
 using ApiCoreCUPPO.Application.Interfaces.IRepository.Venue;
 using ApiCoreCUPPO.Infrastructure.Data;
@@ -44,7 +44,7 @@ namespace ApiCoreCUPPO.Infrastructure.Repositories.Venue
                 "[Venue].[GetOwnerRequests]", new { VerificationStatusID = verificationStatusId }, commandType: CommandType.StoredProcedure);
         }
 
-        public async Task<SpResultDto> ReviewVerificationAsync(int userId, ReviewOwnerDto dto, int reviewerUserId)
+        public async Task<SpResultDto> ReviewVerificationAsync(int userId, ReviewVerificationDto dto, int reviewerUserId)
         {
             using var connection = _db.CreateConnection();
             return await connection.ExecuteSpAsync("[Venue].[ReviewOwnerVerification]", new
@@ -54,6 +54,16 @@ namespace ApiCoreCUPPO.Infrastructure.Repositories.Venue
                 dto.ReviewNotes,
                 ReviewerUserID = reviewerUserId
             });
+        }
+
+        public async Task<(SpResultDto Result, string? PreviousUrl)> SetOwnerDocumentAsync(int userId, string documentUrl)
+        {
+            using var connection = _db.CreateConnection();
+            var parameters = new DynamicParameters(new { UserID = userId, DocumentUrl = documentUrl });
+            parameters.Add("@PreviousUrl", dbType: DbType.String, size: 500, direction: ParameterDirection.Output);
+
+            var result = await connection.ExecuteSpAsync("[Venue].[SetOwnerDocument]", parameters);
+            return (result, parameters.Get<string?>("@PreviousUrl"));
         }
     }
 }

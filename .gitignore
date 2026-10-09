@@ -480,3 +480,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Archivos subidos (fotos y documentos) en desarrollo
+**/storage/

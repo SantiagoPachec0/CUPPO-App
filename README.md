@@ -63,6 +63,27 @@ se escribe en la consola de la API (ahí aparece el código de 6 dígitos). Para
 | `PUT api/admin/owner-requests/{userId}` | SUPERADMIN | Aprobar (2), rechazar (3) o suspender (4) |
 | `POST api/admin/exchange-rates` | SUPERADMIN | Registrar la tasa BCV del día |
 
+### Panel de dueño (solo dueños verificados)
+
+| Endpoint | Uso |
+|---|---|
+| `GET/POST api/owner/venues`, `GET/PUT api/owner/venues/{id}` | Mis complejos (un complejo nuevo queda pendiente de aprobación de CUPPO) |
+| `PUT api/owner/venues/{id}/status` · `/amenities` | Pausar/activar · comodidades |
+| `POST/PUT api/owner/venues/{id}/payment-accounts[/{accountId}]` | Cuentas de cobro (Pago Móvil, transferencia, Zelle, Binance, efectivo) |
+| `POST api/owner/venues/{id}/photos` (multipart `file`) | Fotos (máx. 10; JPG/PNG/WEBP de hasta 5 MB) |
+| `GET/POST api/owner/venues/{id}/courts`, `PUT api/owner/courts/{courtId}` | Canchas |
+| `PUT api/owner/courts/{courtId}/schedule` | Horario semanal (reemplaza todo) |
+| `PUT api/owner/courts/{courtId}/prices` | Tarifas por hora en USD (reemplaza todo) |
+| `GET api/owner/venues/{id}/blocks?from&to`, `POST api/owner/courts/{courtId}/blocks`, `DELETE api/owner/blocks/{id}` | Bloqueos (no se permiten sobre reservas activas) |
+| `POST api/owners/me/document` (multipart `file`) | Foto de cédula/RIF (privada) |
+| `GET/PUT api/admin/venue-requests[/{venueId}]` | SUPERADMIN: aprobar complejos (reciben el plan de prueba) |
+
+Ejemplo de horario: `[{"dayOfWeek":1,"openTime":"08:00","closeTime":"00:00"}]` (1 lunes … 7 domingo; `00:00` = medianoche).
+Ejemplo de tarifas: `[{"dayOfWeek":null,"startTime":"08:00","endTime":"18:00","pricePerHourUSD":30}]` (`null` = todos los días).
+
+**Archivos:** se guardan en `storage/` junto a la API (o en `Storage:RootPath`). Las fotos se publican en `/uploads/...`;
+los documentos de identidad quedan en `storage/private` y solo se descargan con `GET api/admin/owner-requests/{userId}/document`.
+
 Respuestas de operaciones: `{ code, message, data }`. `code > 0` es éxito; un error de negocio responde 400 con
 el mensaje del SP; un error interno responde 500 con un mensaje genérico (el detalle queda en `Log.ErrorLog`).
 

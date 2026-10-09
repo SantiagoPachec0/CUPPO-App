@@ -48,7 +48,7 @@ namespace ApiCoreCUPPO.Application.DTOs.Venue
         public int VenueCount { get; set; }
     }
 
-    public class ReviewOwnerDto
+    public class ReviewVerificationDto
     {
         /// <summary>2 = aprobar, 3 = rechazar, 4 = suspender.</summary>
         [Range(2, 4, ErrorMessage = "Estado inválido: 2 aprobar, 3 rechazar, 4 suspender.")]

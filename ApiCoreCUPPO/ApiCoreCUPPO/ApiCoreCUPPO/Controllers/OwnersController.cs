@@ -1,4 +1,4 @@
-using ApiCoreCUPPO.API.Extensions;
+﻿using ApiCoreCUPPO.API.Extensions;
 using ApiCoreCUPPO.Application.DTOs.Venue;
 using ApiCoreCUPPO.Application.Interfaces.IServices.Venue;
 using Microsoft.AspNetCore.Authorization;
@@ -24,6 +24,16 @@ namespace ApiCoreCUPPO.API.Controllers
         {
             var result = await _ownerService.RequestVerificationAsync(User.GetUserId(), request);
             return FromSpResult(result);
+        }
+
+        /// <summary>Sube la foto de la cédula o RIF (JPG, PNG o WEBP, máximo 5 MB). Es privada: solo la ve CUPPO.</summary>
+        [HttpPost("me/document")]
+        [Consumes("multipart/form-data")]
+        [RequestSizeLimit(UploadLimits.MaxRequestBytes)]
+        public async Task<IActionResult> UploadDocument(IFormFile file)
+        {
+            await using var stream = file.OpenReadStream();
+            return FromSpResult(await _ownerService.UploadDocumentAsync(User.GetUserId(), file.ToUploadDto(stream)));
         }
 
         /// <summary>Estado de la solicitud de dueño del usuario autenticado.</summary>
