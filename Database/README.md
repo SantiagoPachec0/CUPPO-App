@@ -26,7 +26,7 @@ Los scripts de datos (`04`, `09`) se pueden ejecutar varias veces sin duplicar n
 Desde la línea de comandos (`-f 65001` para que los acentos se lean bien):
 
 ```bash
-sqlcmd -S "TU_PC\SQLEXPRESS" -E -C -b -f 65001 -i 00_Database_Schemas.sql,01_Tables.sql,02_Functions.sql,03_StoredProcedures.sql,04_SeedData.sql,05_Catalog.sql,06_Venue.sql,07_Booking.sql,08_Payment_Billing_Social.sql,09_SeedData_Catalogs.sql,10_SP_Security_Owners.sql,11_SP_Booking_Payment.sql
+sqlcmd -S "TU_PC\SQLEXPRESS" -E -C -b -f 65001 -i 00_Database_Schemas.sql,01_Tables.sql,02_Functions.sql,03_StoredProcedures.sql,04_SeedData.sql,05_Catalog.sql,06_Venue.sql,07_Booking.sql,08_Payment_Billing_Social.sql,09_SeedData_Catalogs.sql,10_SP_Security_Owners.sql,11_SP_Booking_Payment.sql,12_Auth.sql,13_SP_Catalog_Owners.sql,14_SP_Venue_Management.sql,15_SP_Public_Venues.sql
 ```
 
 O abrirlos en SSMS y ejecutarlos uno por uno. Los cambios nuevos se agregan como scripts numerados
