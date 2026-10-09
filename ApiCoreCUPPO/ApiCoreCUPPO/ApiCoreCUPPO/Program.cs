@@ -1,10 +1,18 @@
-using ApiCoreCUPPO.API.Authorization;
+﻿using ApiCoreCUPPO.API.Authorization;
+using ApiCoreCUPPO.Application.Interfaces.IRepository.Catalog;
 using ApiCoreCUPPO.Application.Interfaces.IRepository.Security;
+using ApiCoreCUPPO.Application.Interfaces.IRepository.Venue;
+using ApiCoreCUPPO.Application.Interfaces.IServices.Catalog;
 using ApiCoreCUPPO.Application.Interfaces.IServices.Common;
 using ApiCoreCUPPO.Application.Interfaces.IServices.Security;
+using ApiCoreCUPPO.Application.Interfaces.IServices.Venue;
+using ApiCoreCUPPO.Application.Services.Catalog;
 using ApiCoreCUPPO.Application.Services.Security;
+using ApiCoreCUPPO.Application.Services.Venue;
 using ApiCoreCUPPO.Infrastructure.Data;
+using ApiCoreCUPPO.Infrastructure.Repositories.Catalog;
 using ApiCoreCUPPO.Infrastructure.Repositories.Security;
+using ApiCoreCUPPO.Infrastructure.Repositories.Venue;
 using ApiCoreCUPPO.Infrastructure.Utilities.Authentication;
 using ApiCoreCUPPO.Infrastructure.Utilities.Email;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -44,6 +52,12 @@ else
 builder.Services.AddScoped<ISecurityRepository, SecurityRepository>();
 builder.Services.AddScoped<ISecurityService, SecurityService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddScoped<ICatalogRepository, CatalogRepository>();
+builder.Services.AddScoped<ICatalogService, CatalogService>();
+
+builder.Services.AddScoped<IOwnerRepository, OwnerRepository>();
+builder.Services.AddScoped<IOwnerService, OwnerService>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient();

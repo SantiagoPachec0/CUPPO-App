@@ -50,6 +50,22 @@ se escribe en la consola de la API (ahí aparece el código de 6 dígitos). Para
 | `POST api/auth/forgot-password`, `POST api/auth/reset-password` | Código de 6 dígitos por correo, vence en 15 min |
 | `POST api/users/me/change-password` | Cierra las demás sesiones y devuelve una nueva |
 
+### Otros endpoints
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `GET api/catalog` | Público | Deportes, superficies, comodidades, métodos de pago, estados, ciudades y zonas |
+| `GET api/catalog/exchange-rate` | Público | Tasa BCV vigente |
+| `GET api/users/me` | Sesión | Perfil, roles y estado de la solicitud de dueño |
+| `POST api/owners/me/verification` | Sesión | Solicitar ser dueño (queda pendiente) |
+| `GET api/owners/me` | Sesión | Estado de mi solicitud de dueño |
+| `GET api/admin/owner-requests?statusId=1` | SUPERADMIN | Solicitudes de dueño |
+| `PUT api/admin/owner-requests/{userId}` | SUPERADMIN | Aprobar (2), rechazar (3) o suspender (4) |
+| `POST api/admin/exchange-rates` | SUPERADMIN | Registrar la tasa BCV del día |
+
+Respuestas de operaciones: `{ code, message, data }`. `code > 0` es éxito; un error de negocio responde 400 con
+el mensaje del SP; un error interno responde 500 con un mensaje genérico (el detalle queda en `Log.ErrorLog`).
+
 - La app debe guardar el `refreshToken` en almacenamiento seguro (`SecureStorage` en MAUI) y llamar a
   `refresh` cuando reciba un 401.
 - Si se reusa un `refreshToken` ya usado (posible robo), se cierran todas las sesiones del usuario.

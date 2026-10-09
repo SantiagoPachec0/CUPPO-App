@@ -17,6 +17,7 @@ Scripts para crear la base desde cero. Ejecutar **en orden**:
 | `10_SP_Security_Owners.sql` | Registro con rol CLIENT, permisos y verificación de dueños |
 | `11_SP_Booking_Payment.sql` | Disponibilidad, reservas, cancelación, jobs, pagos |
 | `12_Auth.sql` | Contraseñas BCrypt (migración automática), refresh tokens, códigos de recuperación |
+| `13_SP_Catalog_Owners.sql` | Catálogos en una llamada, tasa BCV, consulta de solicitudes de dueño |
 
 Los scripts de datos (`04`, `09`) se pueden ejecutar varias veces sin duplicar nada.
 

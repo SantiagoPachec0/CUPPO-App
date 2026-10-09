@@ -1,4 +1,4 @@
-using ApiCoreCUPPO.API.Extensions;
+﻿using ApiCoreCUPPO.API.Extensions;
 using ApiCoreCUPPO.Application.DTOs.Security;
 using ApiCoreCUPPO.Application.Interfaces.IServices.Security;
 using Microsoft.AspNetCore.Authorization;
@@ -18,6 +18,14 @@ namespace ApiCoreCUPPO.API.Controllers
         {
             _securityService = securityService;
             _authService = authService;
+        }
+
+        /// <summary>Perfil del usuario autenticado: datos, roles y estado de su solicitud de dueño.</summary>
+        [HttpGet("me")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var profile = await _securityService.GetProfileAsync(User.GetUserId());
+            return profile is null ? NotFound(new { code = 0, message = "El usuario no existe." }) : Ok(profile);
         }
 
         /// <summary>
