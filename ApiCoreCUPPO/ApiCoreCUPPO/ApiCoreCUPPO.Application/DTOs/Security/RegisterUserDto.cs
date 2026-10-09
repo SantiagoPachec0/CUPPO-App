@@ -22,6 +22,7 @@ namespace ApiCoreCUPPO.Application.DTOs.Security
 
         [Required(ErrorMessage = "La contraseña es obligatoria.")]
         [MinLength(8, ErrorMessage = "La contraseña debe tener mínimo 8 caracteres.")]
+        [MaxLength(72, ErrorMessage = "La contraseña debe tener máximo 72 caracteres.")]
         public string Password { get; set; } = string.Empty;
 
         [JsonIgnore]

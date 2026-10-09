@@ -1,4 +1,4 @@
-using ApiCoreCUPPO.API.Extensions;
+﻿using ApiCoreCUPPO.API.Extensions;
 using ApiCoreCUPPO.Application.DTOs.Security;
 using ApiCoreCUPPO.Application.Interfaces.IServices.Security;
 using Microsoft.AspNetCore.Authorization;
@@ -12,10 +12,35 @@ namespace ApiCoreCUPPO.API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ISecurityService _securityService;
+        private readonly IAuthService _authService;
 
-        public UsersController(ISecurityService securityService)
+        public UsersController(ISecurityService securityService, IAuthService authService)
         {
             _securityService = securityService;
+            _authService = authService;
+        }
+
+        /// <summary>Perfil del usuario autenticado: datos, roles y estado de su solicitud de dueño.</summary>
+        [HttpGet("me")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var profile = await _securityService.GetProfileAsync(User.GetUserId());
+            return profile is null ? NotFound(new { code = 0, message = "El usuario no existe." }) : Ok(profile);
+        }
+
+        /// <summary>
+        /// Cambia la contraseña del usuario autenticado. Cierra la sesión en los demás
+        /// dispositivos y devuelve una sesión nueva para este.
+        /// </summary>
+        [HttpPost("me/change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto request)
+        {
+            var (isSuccess, data, message) = await _authService.ChangePasswordAsync(User.GetUserId(), request, HttpContext.GetDeviceInfo());
+
+            if (!isSuccess)
+                return BadRequest(new { code = -1, message });
+
+            return Ok(data);
         }
 
         /// <summary>

@@ -1,41 +1,36 @@
-﻿using ApiCoreCUPPO.Application.DTOs.Security;
+﻿using ApiCoreCUPPO.Application.DTOs.Common;
+using ApiCoreCUPPO.Application.DTOs.Security;
 using ApiCoreCUPPO.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ApiCoreCUPPO.Application.Interfaces.IRepository.Security
 {
     public interface ISecurityRepository
     {
-        /// <summary>
-        /// Registra un nuevo usuario en el sistema ejecutando el Stored Procedure correspondiente.
-        /// </summary>
-        Task<SpResultDto> InsertUserAsync(RegisterUserDto dto);
-
-        /// <summary>
-        /// Valida las credenciales de acceso de un usuario.
-        /// </summary>
-        Task<SpResultDto> ValidateUserLoginAsync(LoginRequestDto dto);
-
-        /// <summary>
-        /// Obtiene la entidad del usuario por su identificador único.
-        /// </summary>
+        // ---------- Usuarios
+        Task<SpResultDto> InsertUserAsync(RegisterUserDto dto, string passwordBcrypt);
         Task<User?> GetUserByIdAsync(int userId);
-
-        /// <summary>
-        /// Obtiene la lista de permisos asignados a un usuario.
-        /// </summary>
-        Task<IEnumerable<UserPermissionDto>> GetUserPermissionsAsync(int userId);
-
-        /// <summary>
-        /// Actualiza la información de un usuario existente.
-        /// </summary>
         Task<SpResultDto> UpdateUserAsync(UpdateUserDto dto);
 
-        /// <summary>
-        /// Valida si un usuario posee permisos sobre una acción o endpoint específico.
-        /// </summary>
+        // ---------- Inicio de sesión
+        Task<UserLoginDataDto?> GetUserForLoginAsync(string identifier);
+        Task<SpResultDto> RegisterLoginAttemptAsync(int userId, bool success);
+
+        /// <summary>Valida contra el hash anterior (SHA-512 en SQL). Solo para usuarios aún no migrados a BCrypt.</summary>
+        Task<SpResultDto> ValidateLegacyLoginAsync(string identifier, string password);
+        Task<SpResultDto> SetUserPasswordAsync(int userId, string passwordBcrypt, bool revokeSessions, bool unblock);
+
+        // ---------- Roles y permisos
+        Task<IEnumerable<string>> GetUserRolesAsync(int userId);
+        Task<IEnumerable<UserPermissionDto>> GetUserPermissionsAsync(int userId);
         Task<(bool HasPermission, SpResultDto Result)> ValidateUserPermissionAsync(CheckPermissionDto dto);
+
+        // ---------- Sesiones (refresh tokens)
+        Task<SpResultDto> InsertRefreshTokenAsync(int userId, byte[] tokenHash, DateTime expiresAt, string? deviceInfo);
+        Task<SpResultDto> RotateRefreshTokenAsync(byte[] tokenHash, byte[] newTokenHash, DateTime newExpiresAt, string? deviceInfo);
+        Task<SpResultDto> RevokeRefreshTokenAsync(byte[] tokenHash);
+
+        // ---------- Recuperación de contraseña
+        Task<SpResultDto> CreatePasswordResetCodeAsync(string mail, byte[] codeHash, DateTime expiresAt);
+        Task<SpResultDto> ConsumePasswordResetCodeAsync(string mail, byte[] codeHash);
     }
 }

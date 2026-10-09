@@ -16,13 +16,17 @@ Scripts para crear la base desde cero. Ejecutar **en orden**:
 | `09_SeedData_Catalogs.sql` | Datos de catálogos, menú de módulos y permisos por rol |
 | `10_SP_Security_Owners.sql` | Registro con rol CLIENT, permisos y verificación de dueños |
 | `11_SP_Booking_Payment.sql` | Disponibilidad, reservas, cancelación, jobs, pagos |
+| `12_Auth.sql` | Contraseñas BCrypt (migración automática), refresh tokens, códigos de recuperación |
+| `13_SP_Catalog_Owners.sql` | Catálogos en una llamada, tasa BCV, consulta de solicitudes de dueño |
+| `14_SP_Venue_Management.sql` | Panel de dueño: complejos, canchas, horarios, precios, bloqueos, cuentas de cobro, fotos; revisión de complejos |
+| `15_SP_Public_Venues.sql` | Búsqueda pública de complejos (filtros y distancia) y ficha pública |
 
 Los scripts de datos (`04`, `09`) se pueden ejecutar varias veces sin duplicar nada.
 
 Desde la línea de comandos (`-f 65001` para que los acentos se lean bien):
 
 ```bash
-sqlcmd -S "TU_PC\SQLEXPRESS" -E -C -b -f 65001 -i 00_Database_Schemas.sql,01_Tables.sql,02_Functions.sql,03_StoredProcedures.sql,04_SeedData.sql,05_Catalog.sql,06_Venue.sql,07_Booking.sql,08_Payment_Billing_Social.sql,09_SeedData_Catalogs.sql,10_SP_Security_Owners.sql,11_SP_Booking_Payment.sql
+sqlcmd -S "TU_PC\SQLEXPRESS" -E -C -b -f 65001 -i 00_Database_Schemas.sql,01_Tables.sql,02_Functions.sql,03_StoredProcedures.sql,04_SeedData.sql,05_Catalog.sql,06_Venue.sql,07_Booking.sql,08_Payment_Billing_Social.sql,09_SeedData_Catalogs.sql,10_SP_Security_Owners.sql,11_SP_Booking_Payment.sql,12_Auth.sql,13_SP_Catalog_Owners.sql,14_SP_Venue_Management.sql,15_SP_Public_Venues.sql
 ```
 
 O abrirlos en SSMS y ejecutarlos uno por uno. Los cambios nuevos se agregan como scripts numerados
