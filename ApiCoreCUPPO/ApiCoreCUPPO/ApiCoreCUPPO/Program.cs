@@ -1,16 +1,25 @@
 ﻿using ApiCoreCUPPO.API.Authorization;
+using ApiCoreCUPPO.Application.Interfaces.IRepository.Booking;
 using ApiCoreCUPPO.Application.Interfaces.IRepository.Catalog;
+using ApiCoreCUPPO.Application.Interfaces.IRepository.Payment;
 using ApiCoreCUPPO.Application.Interfaces.IRepository.Security;
 using ApiCoreCUPPO.Application.Interfaces.IRepository.Venue;
+using ApiCoreCUPPO.Application.Interfaces.IServices.Booking;
 using ApiCoreCUPPO.Application.Interfaces.IServices.Catalog;
+using ApiCoreCUPPO.Application.Interfaces.IServices.Payment;
 using ApiCoreCUPPO.Application.Interfaces.IServices.Common;
 using ApiCoreCUPPO.Application.Interfaces.IServices.Security;
 using ApiCoreCUPPO.Application.Interfaces.IServices.Venue;
+using ApiCoreCUPPO.Application.Services.Booking;
 using ApiCoreCUPPO.Application.Services.Catalog;
+using ApiCoreCUPPO.Application.Services.Payment;
 using ApiCoreCUPPO.Application.Services.Security;
 using ApiCoreCUPPO.Application.Services.Venue;
 using ApiCoreCUPPO.Infrastructure.Data;
+using ApiCoreCUPPO.Infrastructure.Jobs;
+using ApiCoreCUPPO.Infrastructure.Repositories.Booking;
 using ApiCoreCUPPO.Infrastructure.Repositories.Catalog;
+using ApiCoreCUPPO.Infrastructure.Repositories.Payment;
 using ApiCoreCUPPO.Infrastructure.Repositories.Security;
 using ApiCoreCUPPO.Infrastructure.Repositories.Venue;
 using ApiCoreCUPPO.Infrastructure.Utilities.Authentication;
@@ -68,6 +77,15 @@ builder.Services.AddScoped<ICourtRepository, CourtRepository>();
 builder.Services.AddScoped<ICourtManagementService, CourtManagementService>();
 builder.Services.AddScoped<IPublicVenueRepository, PublicVenueRepository>();
 builder.Services.AddScoped<IPublicVenueService, PublicVenueService>();
+
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+
+// Procesos automáticos: vencer reservas sin pagar y completar las que ya pasaron
+builder.Services.Configure<JobsOptions>(builder.Configuration.GetSection("Jobs"));
+builder.Services.AddHostedService<BookingMaintenanceService>();
 
 // Archivos: fotos públicas en /uploads y documentos privados (ver Storage:RootPath)
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));

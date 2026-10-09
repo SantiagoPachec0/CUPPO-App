@@ -20,13 +20,14 @@ Scripts para crear la base desde cero. Ejecutar **en orden**:
 | `13_SP_Catalog_Owners.sql` | Catálogos en una llamada, tasa BCV, consulta de solicitudes de dueño |
 | `14_SP_Venue_Management.sql` | Panel de dueño: complejos, canchas, horarios, precios, bloqueos, cuentas de cobro, fotos; revisión de complejos |
 | `15_SP_Public_Venues.sql` | Búsqueda pública de complejos (filtros y distancia) y ficha pública |
+| `16_SP_Booking_Queries.sql` | Mis reservas, detalle, agenda del dueño, pagos pendientes, comprobantes, "no asistió"; reservas exigen dueño verificado |
 
 Los scripts de datos (`04`, `09`) se pueden ejecutar varias veces sin duplicar nada.
 
 Desde la línea de comandos (`-f 65001` para que los acentos se lean bien):
 
 ```bash
-sqlcmd -S "TU_PC\SQLEXPRESS" -E -C -b -f 65001 -i 00_Database_Schemas.sql,01_Tables.sql,02_Functions.sql,03_StoredProcedures.sql,04_SeedData.sql,05_Catalog.sql,06_Venue.sql,07_Booking.sql,08_Payment_Billing_Social.sql,09_SeedData_Catalogs.sql,10_SP_Security_Owners.sql,11_SP_Booking_Payment.sql,12_Auth.sql,13_SP_Catalog_Owners.sql,14_SP_Venue_Management.sql,15_SP_Public_Venues.sql
+sqlcmd -S "TU_PC\SQLEXPRESS" -E -C -b -f 65001 -i 00_Database_Schemas.sql,01_Tables.sql,02_Functions.sql,03_StoredProcedures.sql,04_SeedData.sql,05_Catalog.sql,06_Venue.sql,07_Booking.sql,08_Payment_Billing_Social.sql,09_SeedData_Catalogs.sql,10_SP_Security_Owners.sql,11_SP_Booking_Payment.sql,12_Auth.sql,13_SP_Catalog_Owners.sql,14_SP_Venue_Management.sql,15_SP_Public_Venues.sql,16_SP_Booking_Queries.sql
 ```
 
 O abrirlos en SSMS y ejecutarlos uno por uno. Los cambios nuevos se agregan como scripts numerados
@@ -57,7 +58,7 @@ a continuación (`12_...sql`), sin editar los anteriores una vez aplicados en ot
 - Precio = suma del precio por hora de cada media hora (una reserva puede cruzar de tarifa día a noche).
 - Parámetros editables en `Catalog.Settings`: comisión, máximo de reservas sin pagar, días de anticipación, etc.
 
-**Jobs que debe correr la API** (servicio en segundo plano, Fase 3)
+**Jobs** (los corre la API en segundo plano: `BookingMaintenanceService`, configurable en `Jobs`)
 - `Booking.ExpirePendingBookings` cada minuto.
 - `Booking.CompletePastBookings` cada hora.
 

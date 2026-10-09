@@ -50,6 +50,12 @@ se escribe en la consola de la API (ahí aparece el código de 6 dígitos). Para
 | `POST api/auth/forgot-password`, `POST api/auth/reset-password` | Código de 6 dígitos por correo, vence en 15 min |
 | `POST api/users/me/change-password` | Cierra las demás sesiones y devuelve una nueva |
 
+- La app debe guardar el `refreshToken` en almacenamiento seguro (`SecureStorage` en MAUI) y llamar a
+  `refresh` cuando reciba un 401.
+- Si se reusa un `refreshToken` ya usado (posible robo), se cierran todas las sesiones del usuario.
+- Login, registro y recuperación tienen un límite de 20 peticiones por minuto por IP (responde 429).
+- Políticas en controladores: `[Authorize(Policy = Policies.VerifiedOwner)]` y `[Authorize(Policy = Policies.SuperAdmin)]`.
+
 ### Otros endpoints
 
 | Endpoint | Acceso | Uso |
@@ -83,17 +89,33 @@ se escribe en la consola de la API (ahí aparece el código de 6 dígitos). Para
 Ejemplo de horario: `[{"dayOfWeek":1,"openTime":"08:00","closeTime":"00:00"}]` (1 lunes … 7 domingo; `00:00` = medianoche).
 Ejemplo de tarifas: `[{"dayOfWeek":null,"startTime":"08:00","endTime":"18:00","pricePerHourUSD":30}]` (`null` = todos los días).
 
+### Reservas y pagos
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `GET api/courts/{courtId}/availability?date=2026-10-12` | Público | Turnos del día con precio y si están libres |
+| `POST api/bookings` | Sesión | Reservar (`courtID`, `startDateTime` hora local, `durationMinutes`). Responde 409 si alguien tomó el turno |
+| `GET api/bookings/me?scope=upcoming\|past` | Sesión | Mis reservas |
+| `GET api/bookings/{id}` | Jugador o dueño | Detalle, cuentas del complejo para pagar, total en Bs y pagos registrados |
+| `POST api/bookings/{id}/cancel` | Jugador | Cancelar (si está confirmada, con la anticipación del complejo) |
+| `POST api/bookings/{id}/payments` (multipart) | Jugador | Registrar pago: campos + `receipt` (foto del comprobante, opcional) |
+| `GET api/payments/{id}/receipt` | Jugador o dueño | Ver el comprobante (privado) |
+| `GET api/owner/venues/{id}/agenda?from&to` | Dueño | Agenda del complejo |
+| `GET api/owner/payments/pending?venueId` | Dueño | Pagos por verificar (marca `isUnderpaid` si el monto no alcanza) |
+| `PUT api/owner/payments/{id}/review` | Dueño | Aprobar (reserva confirmada) o rechazar con motivo (el jugador puede volver a pagar) |
+| `POST api/owner/bookings/{id}/cancel`, `PUT api/owner/bookings/{id}/no-show` | Dueño | Cancelar · marcar que no asistió |
+
+Flujo: reservar → la cancha queda retenida `bookingHoldMinutes` (30 por defecto) → el jugador paga a la cuenta del complejo
+y registra referencia y comprobante → el dueño aprueba → confirmada. Si no paga a tiempo, la API la vence sola y libera la cancha.
+
+**Procesos automáticos** (sección `Jobs` de la configuración): cada 60 s se vencen las reservas sin pagar y cada 15 min se
+completan las confirmadas que ya pasaron. Si hay varias instancias de la API, dejar `Jobs:Enabled = true` en una sola.
+
 **Archivos:** se guardan en `storage/` junto a la API (o en `Storage:RootPath`). Las fotos se publican en `/uploads/...`;
 los documentos de identidad quedan en `storage/private` y solo se descargan con `GET api/admin/owner-requests/{userId}/document`.
 
 Respuestas de operaciones: `{ code, message, data }`. `code > 0` es éxito; un error de negocio responde 400 con
 el mensaje del SP; un error interno responde 500 con un mensaje genérico (el detalle queda en `Log.ErrorLog`).
-
-- La app debe guardar el `refreshToken` en almacenamiento seguro (`SecureStorage` en MAUI) y llamar a
-  `refresh` cuando reciba un 401.
-- Si se reusa un `refreshToken` ya usado (posible robo), se cierran todas las sesiones del usuario.
-- Login, registro y recuperación tienen un límite de 20 peticiones por minuto por IP (responde 429).
-- Políticas en controladores: `[Authorize(Policy = Policies.VerifiedOwner)]` y `[Authorize(Policy = Policies.SuperAdmin)]`.
 
 En producción los mismos valores se pasan como variables de entorno:
 `ConnectionStrings__DefaultConnection`, `JwtOptions__SecretKey` y `Cors__AllowedOrigins__0`.
